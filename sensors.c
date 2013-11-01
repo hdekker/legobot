@@ -107,6 +107,23 @@ int sensors_terminate()
   return 0;
 }
 
+int sensors_set_color_mode(int port, SENSORS_NXT_COL mode)
+{
+  // from http://python-ev3.org/types.html
+  //  Type  Mode  Name      DataSets  Format  Figures  Decimals  Views  Conn. Pins  RawMin   RawMax   PctMin  PctMax  SiMin    SiMax    Time  IdValue  Symbol  
+  //  4     0     NXT-COL-REF   1       2     5        0         5      119   0x0E    200.0   1500.0       0     100      0.0    100.0   300        0  pct
+  //  4     1     NXT-COL-AMB   1       2     5        0         5      119   0x11    200.0   2900.0       0     100      0.0    100.0   300        0  pct
+  //  4     2     NXT-COL-COL   1       0     2        0         5      119   0x0D      0.0      8.0       0     100      0.0      8.0   300        0  col
+  //  4     3     NXT-COL-GRN   1       2     5        0         5      119   0x0F    200.0   1500.0       0     100      0.0    100.0   300        0  pct
+  //  4     4     NXT-COL-BLU   1       2     5        0         5      119   0x10    200.0   1500.0       0     100      0.0    100.0   300        0  pct
+  //  4     5     NXT-COL-RAW 
+  DEVCON DevCon;
+  DevCon.Type[port] = TYPE_NXT_COLOR;
+  DevCon.Mode[port] = mode;
+  DevCon.Connection[port] = CONN_INPUT_UART;
+  ioctl(uart_file, UART_SET_CONN, &DevCon);
+  return 0;
+}
 
 
 UWORD sensors_get_touched(int port)

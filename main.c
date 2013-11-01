@@ -15,6 +15,8 @@ int main(int argc, const char* argv[])
   sensors_initialize();
   motors_initialize();
 
+  sensors_set_color_mode(2, SENSORS_NXT_COL_COL);
+  
   for(i = 0;i<MAX_SAMPLES;i++)
   {
     // The ports are designated as PORT_NUMBER-1
