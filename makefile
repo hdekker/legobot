@@ -14,7 +14,7 @@ MINOR := 01
 INCLUDES_SRC = -I$(ANOTHER_PROJECT_HOME) -I$(YET_ANOTHER_PROJECT_HOME)/include
 
 #Libraries
-LIBRARIES := -ldl -L$(ANOTHER_PROJECT_HOME) -lpthread
+LIBRARIES := -ldl -L$(ANOTHER_PROJECT_HOME) -lpthread -lm
 
 #Add more App Object files
 OBJFILES :=

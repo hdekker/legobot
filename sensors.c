@@ -25,13 +25,13 @@ int sensors_initialize()
   //Open the device file
   if((ad_file = open(ANALOG_DEVICE_NAME, O_RDWR | O_SYNC)) == -1)
   {
-    printf("Failed to open analogue device\n");
+    printf("Failed to open analog device\n");
     return -1;
   }
   pAnalog = (ANALOG*)mmap(0, sizeof(ANALOG), PROT_READ | PROT_WRITE, MAP_FILE | MAP_SHARED, ad_file, 0);
   if (pAnalog == MAP_FAILED)
   {
-    printf("Failed to map analogue device\n");
+    printf("Failed to map analog device\n");
     return -1;
   }
   printf("AD device ready\n");
@@ -96,7 +96,7 @@ int sensors_initialize()
 int sensors_terminate()
 {
   // Close the device files
-  printf("Closing ad device\n");
+  printf("Closing analog device\n");
   close(ad_file);
   printf("Closing uart device\n");
   close(uart_file);
