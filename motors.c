@@ -75,10 +75,23 @@ void motors_reset_all()
 void motors_stop_all()
 {
   char motor_command[3];
-  motor_command[0] = opOUTPUT_STOP;
+  
+  // Switch to open loop
+  motor_command[0] = opOUTPUT_POWER;
   motor_command[1] = 0x15;
   motor_command[2] = 0;
   write(pwm_file, motor_command, 3);
+
+  // Stop all motors
+  motor_command[0] = opOUTPUT_STOP;
+  motor_command[1] = 0x15;
+  motor_command[2] = 1;
+  write(pwm_file, motor_command, 3);
+  
+  // Reset port
+  //motor_command[0] = opOUTPUT_RESET;
+  //motor_command[1] = 0x15;
+  //write(pwm_file, motor_command, 2);
 }
 
 SBYTE motors_get_motor_speed(int port)
