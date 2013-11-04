@@ -45,8 +45,12 @@ int motors_initialize()
 int motors_terminate()
 {
   motors_stop_all();
+  
   printf("Closing encoder device\n");
+  if (pMotorData && pMotorData != MAP_FAILED)
+    munmap(pMotorData, sizeof(MOTORDATA)*vmOUTPUTS);
   close(motor_file);
+  
   printf("Closing pwm device\n");
   close(pwm_file);
   

@@ -97,12 +97,23 @@ int sensors_terminate()
 {
   // Close the device files
   printf("Closing analog device\n");
+  if (pAnalog && pAnalog != MAP_FAILED)
+    munmap(pAnalog, sizeof(ANALOG));
   close(ad_file);
+  
   printf("Closing uart device\n");
+  if (pUart && pUart != MAP_FAILED)
+    munmap(pUart, sizeof(UART));
   close(uart_file);
+  
   printf("Closing ui device\n");
+  if (pUI && pUI != MAP_FAILED)
+    munmap(pUI, sizeof(UI)*vmOUTPUTS);
   close(ui_file);
+  
   printf("Closing iic device\n");
+  if (pIic && pIic != MAP_FAILED)
+    munmap(pIic, sizeof(IIC));
   close(iic_file);
   return 0;
 }
