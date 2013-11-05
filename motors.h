@@ -12,6 +12,12 @@ SLONG motors_get_angle(int port);
 
 void motors_reset_all();
 void motors_stop_all();
-int motors_step_speed(int port, int speed, int step1, int step2, int step3);
+void motors_stop(int port);
+void motors_set_speed(int port, int speed);
+void motors_step_speed(int port, int speed, int step1, int step2, int step3);
+
+void motors_move_to_angle(int port, int speed, int angle_deg);
+void motors_start_move_to_angle(int port, int speed, int angle_deg);
+void motors_wait_move_to_angle(int port, int angle_deg);
 
 #endif /* MOTORS_H_ */

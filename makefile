@@ -60,7 +60,7 @@ ifeq ($(BUILD),devel)
 DEBUGFLAGS_Assembler = -g
 DEBUGFLAGS_C++-Compiler = -g -O0 -fno-omit-frame-pointer -pipe -Wall -DDEBUG
 DEBUGFLAGS_C++-Linker = -g
-DEBUGFLAGS_C-Compiler = -g -O0 -fno-omit-frame-pointer -pipe -Wall
+DEBUGFLAGS_C-Compiler = -g -O0 -std=gnu99 -fno-omit-frame-pointer -pipe -Wall
 DEBUGFLAGS_C-Linker = -g
 DEBUGFLAGS_Librarian = -g
 DEBUGFLAGS_Shared-Library-Linker = -g

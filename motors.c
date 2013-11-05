@@ -7,6 +7,7 @@
 #include "lms2012.h"
 
 #include "motors.h"
+#include "common.h"
 
 static int pwm_file;
 static int motor_file;
@@ -76,15 +77,25 @@ void motors_reset_all()
   }
 }
 
+void motors_stop(int port)
+{
+  char motor_command[3];
+  port = 1 << port;
+  motor_command[0] = opOUTPUT_STOP;
+  motor_command[1] = port;
+  motor_command[2] = 1;
+  write(pwm_file, motor_command, 3);
+}
+
 void motors_stop_all()
 {
   char motor_command[3];
   
   // Switch to open loop
-  motor_command[0] = opOUTPUT_POWER;
-  motor_command[1] = 0x15;
-  motor_command[2] = 0;
-  write(pwm_file, motor_command, 3);
+  //motor_command[0] = opOUTPUT_POWER;
+  //motor_command[1] = 0x15;
+  //motor_command[2] = 0;
+  //write(pwm_file, motor_command, 3);
 
   // Stop all motors
   motor_command[0] = opOUTPUT_STOP;
@@ -98,6 +109,22 @@ void motors_stop_all()
   //write(pwm_file, motor_command, 2);
 }
 
+void motors_set_speed(int port, int speed)
+{
+  char motor_command[3];
+  port = 1 << port;
+  
+  // Set speed
+  motor_command[0] = opOUTPUT_POWER;
+  motor_command[1] = port;
+  motor_command[2] = speed;
+  write(pwm_file, motor_command, 3);
+  
+  // Start the motor
+  motor_command[0] = opOUTPUT_START;
+  write(pwm_file, motor_command, 2);
+}
+
 SBYTE motors_get_motor_speed(int port)
 {
   return pMotorData[port].Speed;
@@ -108,9 +135,8 @@ SLONG motors_get_angle(int port)
   return pMotorData[port].TachoSensor - angles[port];
 }
 
-
 //opOUTPUT_STEP_SPEED   LAYER   NOS      SPEED   STEP1   STEP2   STEP3   BRAKE
-int motors_step_speed(int port, int speed, int step1, int step2, int step3)
+void motors_step_speed(int port, int speed, int step1, int step2, int step3)
 {
   port = 1 << port;
   //printf("motors_step_speed\n");
@@ -134,6 +160,43 @@ int motors_step_speed(int port, int speed, int step1, int step2, int step3)
   motor_command[0] = opOUTPUT_START;
   motor_command[1] = port;
   write(pwm_file, motor_command, 2);
-  
-  return 0;
+}
+
+
+void motors_start_move_to_angle(int port, int speed, int angle_deg)
+{
+  // angle (-90 = left, 0 = forward, +90 = right)
+  SLONG motor_angle = motors_get_angle(port);
+  //int swing_edge;
+  if (motor_angle < angle_deg)
+  {
+    int swing = angle_deg - motor_angle;
+    int swing_edge = swing / 5;
+    motors_step_speed(port, speed, swing_edge, swing - (swing_edge * 2), swing_edge);
+  }
+  else if (motor_angle > angle_deg)
+  {
+    int swing = motor_angle - angle_deg;
+    int swing_edge = swing / 5;
+    motors_step_speed(port, -speed, swing_edge, swing - (swing_edge * 2), swing_edge);
+  }
+}
+
+
+void motors_wait_move_to_angle(int port, int angle_deg)
+{
+  SLONG motor_angle;
+  do
+  {
+    motor_angle = motors_get_angle(port);
+    printf("motors_wait_move_to_angle: port=%d, angle=%d, cur_angle=%d\n", port, angle_deg, motor_angle);
+    sleep_ms(100);
+  } while ((motor_angle < (angle_deg-5)) || (motor_angle > (angle_deg+5)));
+}
+
+
+void motors_move_to_angle(int port, int speed, int angle_deg)
+{
+  motors_start_move_to_angle(port, speed, angle_deg);
+  motors_wait_move_to_angle(port, angle_deg);
 }

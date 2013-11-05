@@ -65,19 +65,19 @@ void navi_update_pos(int left_angle, int right_angle)
 }
 
 
-void navi_update_map(int radar_angle_deg, int distance_cm, int left_angle, int right_angle)
+void navi_update_map(int radar_angle_deg, int distance_mm, int left_angle, int right_angle)
 {
   navi_update_pos(left_angle, right_angle);
   // Don't look further than 50 cm at the moment, because of ultrasonic wide beam
-  if ((distance_cm > 5) && (distance_cm < 60))
+  if ((distance_mm > 50) && (distance_mm < 700))
   {
     float a = pos.a + DEG_TO_RAD(radar_angle_deg);
-    float dx = cos(a) * (float) distance_cm / 100.0f;
-    float dy = sin(a) * (float) distance_cm / 100.0f;
+    float dx = cos(a) * (float) distance_mm / 1000.0f;
+    float dy = sin(a) * (float) distance_mm / 1000.0f;
     float x = dx + pos.x;  
     float y = dy + pos.y;
     printf("pos l=%d, r=%d, x=%.2f, y=%.2f, a=%.2f\n", left_angle, right_angle, pos.x, pos.y, pos.a);
-    printf("map a=%d, d=%.2f, dx=%.2f, dy=%.2f, x=%.2f, y=%.2f\n\n", radar_angle_deg, ((float)distance_cm/100.0f), dx, dy, x, y);
-    screen_draw_circle(SCREEN_WIDTH/2 + dx*200, SCREEN_HEIGTH/2 - dy*200, 4);
+    printf("map a=%d, d=%.2f, dx=%.2f, dy=%.2f, x=%.2f, y=%.2f\n\n", radar_angle_deg, ((float)distance_mm/1000.0f), dx, dy, x, y);
+    screen_draw_circle(SCREEN_WIDTH/2 + dx*100, SCREEN_HEIGTH/2 - dy*100, 4);
   }
 }

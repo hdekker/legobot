@@ -6,6 +6,7 @@
 #include <sys/ioctl.h>
 #include "lms2012.h"
 #include "sensors.h"
+#include "robot.h"
 
 static int ad_file;
 static ANALOG *pAnalog;
@@ -90,6 +91,31 @@ int sensors_initialize()
   // Setup I2C communication
   ioctl(iic_file, IIC_SETUP, &IicDat);
   
+  // from http://python-ev3.org/types.html
+  //  Type  Mode  Name      DataSets  Format  Figures  Decimals  Views  Conn. Pins  RawMin   RawMax   PctMin  PctMax  SiMin    SiMax    Time  IdValue  Symbol  
+  //  4     0     NXT-COL-REF   1       2     5        0         5      119   0x0E    200.0   1500.0       0     100      0.0    100.0   300        0  pct
+  //  4     1     NXT-COL-AMB   1       2     5        0         5      119   0x11    200.0   2900.0       0     100      0.0    100.0   300        0  pct
+  //  4     2     NXT-COL-COL   1       0     2        0         5      119   0x0D      0.0      8.0       0     100      0.0      8.0   300        0  col
+  //  29    0     COL-REFLECT   1       0     3        0         3      122   0x2D      0.0    100.0       0     100      0.0    100.0    10        0  pct
+  //  29    1     COL-AMBIENT   1       0     3        0         3      122   0x2D      0.0    100.0       0     100      0.0    100.0    10        0  pct
+  //  29    2     COL-COLOR     1       0     2        0         3      122   0x2D      0.0      8.0       0     100      0.0      8.0    10        0  col
+  
+  //  Type  Mode  Name      DataSets  Format  Figures  Decimals  Views  Conn. Pins  RawMin   RawMax   PctMin  PctMax  SiMin    SiMax    Time  IdValue  Symbol  
+  //  30    0     US-DIST-CM    1       1     5        1         3      122   0x2D      0.0   2550.0       0     100      0.0    255.0    10        0  cm
+  //  30    1     US-DIST-IN    1       1     5        1         3      122   0x2D      0.0   1000.0       0     100      0.0    100.0    10        0  inch
+  //  30    2     US-LISTEN     1       0     1        0         3      122   0x2D      0.0      1.0       0     100      0.0      1.0    10        0  _
+  DEVCON DevCon;
+  memset(&DevCon, 0, sizeof(DEVCON));
+  
+  DevCon.Type[ROBOT_COLOR_SENSOR_PORT] = 29; // TYPE_NXT_COLOR;
+  DevCon.Mode[ROBOT_COLOR_SENSOR_PORT] = ROBOT_COLOR_SENSOR_MODE;
+  DevCon.Connection[ROBOT_COLOR_SENSOR_PORT] = CONN_INPUT_UART;
+  
+  DevCon.Type[ROBOT_DISTANCE_SENSOR_PORT] = 30;
+  DevCon.Mode[ROBOT_DISTANCE_SENSOR_PORT] = ROBOT_DISTANCE_SENSOR_MODE;
+  DevCon.Connection[ROBOT_DISTANCE_SENSOR_PORT] = CONN_INPUT_UART;
+  
+  ioctl(uart_file, UART_SET_CONN, &DevCon);
   return 0;
 }
 
@@ -118,25 +144,6 @@ int sensors_terminate()
   return 0;
 }
 
-int sensors_set_color_mode(int port, SENSORS_NXT_COL mode)
-{
-  // from http://python-ev3.org/types.html
-  //  Type  Mode  Name      DataSets  Format  Figures  Decimals  Views  Conn. Pins  RawMin   RawMax   PctMin  PctMax  SiMin    SiMax    Time  IdValue  Symbol  
-  //  4     0     NXT-COL-REF   1       2     5        0         5      119   0x0E    200.0   1500.0       0     100      0.0    100.0   300        0  pct
-  //  4     1     NXT-COL-AMB   1       2     5        0         5      119   0x11    200.0   2900.0       0     100      0.0    100.0   300        0  pct
-  //  4     2     NXT-COL-COL   1       0     2        0         5      119   0x0D      0.0      8.0       0     100      0.0      8.0   300        0  col
-  //  4     3     NXT-COL-GRN   1       2     5        0         5      119   0x0F    200.0   1500.0       0     100      0.0    100.0   300        0  pct
-  //  4     4     NXT-COL-BLU   1       2     5        0         5      119   0x10    200.0   1500.0       0     100      0.0    100.0   300        0  pct
-  //  4     5     NXT-COL-RAW 
-  DEVCON DevCon;
-  DevCon.Type[port] = TYPE_NXT_COLOR;
-  DevCon.Mode[port] = mode;
-  DevCon.Connection[port] = CONN_INPUT_UART;
-  ioctl(uart_file, UART_SET_CONN, &DevCon);
-  return 0;
-}
-
-
 UWORD sensors_get_touched(int port)
 {
   // The ports are designated as PORT_NUMBER-1
@@ -149,8 +156,19 @@ UWORD sensors_get_ir_distance(int port)
   return pUart->Raw[port][pUart->Actual[port]][0];
 }
 
+UWORD sensors_get_us_distance_mm(int port)
+{
+  // Works for new EV3 ultrasone sensor.
+  
+  // The ports are designated as PORT_NUMBER-1
+  // Value in tenth of millimeter
+  return (unsigned char) pUart->Raw[port][pUart->Actual[port]][1]*256 + pUart->Raw[port][pUart->Actual[port]][0];
+}
+
 UWORD sensors_get_ul_distance(int port)
 {
+  // Works for old NXT ultrasone sensor.
+  
   // The ports are designated as PORT_NUMBER-1
   return (unsigned char) pIic->Raw[port][pIic->Actual[port]][0]; //*256 + pIic->Raw[port][pIic->Actual[port]][1];
 }

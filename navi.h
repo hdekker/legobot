@@ -13,6 +13,6 @@ void navi_terminate();
 
 
 NAVI_pos navi_get_pos();
-void navi_update_map(int radar_angle, int distance, int left_angle, int right_angle);
+void navi_update_map(int radar_angle_deg, int distance_mm, int left_angle, int right_angle);
 
 #endif /* NAVI_H_ */
