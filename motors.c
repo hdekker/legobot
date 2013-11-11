@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -185,13 +186,21 @@ void motors_start_move_to_angle(int port, int speed, int angle_deg)
 
 void motors_wait_move_to_angle(int port, int angle_deg)
 {
+  // Wait until motors movement is finished. This is detected when motor speed is 0.
+  // To prevent errors, the last 4 motor speed measurements have to be 0.
+  
   SLONG motor_angle;
+  SBYTE motor_speeds[4] = { -1, -1, -1, -1 };
+  int i = 0;
   do
   {
+    sleep_ms(20);
+    motor_speeds[i%4] = motors_get_motor_speed(port);
     motor_angle = motors_get_angle(port);
-    printf("motors_wait_move_to_angle: port=%d, angle=%d, cur_angle=%d\n", port, angle_deg, motor_angle);
-    sleep_ms(100);
-  } while ((motor_angle < (angle_deg-5)) || (motor_angle > (angle_deg+5)));
+    if ((i%10) == 0) printf("motors_wait_move_to_angle: port=%d, angle=%d, cur_angle=%d, speed=%d\n", port, angle_deg, motor_angle, motor_speeds[i%4]);
+    // Speed of last 4 measurements
+    i++;
+  } while ((abs(motor_speeds[0]) + abs(motor_speeds[1]) + abs(motor_speeds[2]) + abs(motor_speeds[3])) > 0);
 }
 
 
