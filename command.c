@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "robot.h"
 #include "motors.h"
 #include "sensors.h"
@@ -17,9 +18,10 @@ void command_terminate()
 
 int command_get_forward_distance_mm()
 {
-  motors_move_to_angle(ROBOT_RADAR_MOTOR_PORT, ROBOT_RADAR_SPEED, 0);
+  //motors_move_to_angle(ROBOT_RADAR_MOTOR_PORT, ROBOT_RADAR_SPEED, 0);
   sleep_ms(100);
-  int distance = sensors_get_us_distance_mm(ROBOT_DISTANCE_SENSOR_PORT);
+  int distance = sensors_get_ir_distance(ROBOT_INFRARED_SENSOR_PORT);
+  distance *= 10; // From pct to mm 
   printf("command_get_forward_distance_mm: distance=%d\n", distance);
   return distance;
 }
@@ -27,9 +29,9 @@ int command_get_forward_distance_mm()
 
 int command_get_right_distance_mm()
 {
-  motors_move_to_angle(ROBOT_RADAR_MOTOR_PORT, ROBOT_RADAR_SPEED, 90);
+  //motors_move_to_angle(ROBOT_RADAR_MOTOR_PORT, ROBOT_RADAR_SPEED, 90);
   sleep_ms(100);
-  int distance = sensors_get_us_distance_mm(ROBOT_DISTANCE_SENSOR_PORT);
+  int distance = sensors_get_us_distance_mm(ROBOT_ULTRASONIC_SENSOR_PORT);
   printf("command_get_right_distance_mm: distance=%d\n", distance);
   return distance;
 }
@@ -40,6 +42,7 @@ void command_move_forward()
   printf("command_move_forward\n");
   motors_set_speed(ROBOT_WHEEL_LEFT_PORT, ROBOT_SPEED);
   motors_set_speed(ROBOT_WHEEL_RIGHT_PORT, ROBOT_SPEED);
+  sleep_ms(100);
 }
 
 void command_move_stop()
@@ -47,14 +50,12 @@ void command_move_stop()
   printf("command_move_stop\n");
   motors_stop(ROBOT_WHEEL_LEFT_PORT);
   motors_stop(ROBOT_WHEEL_RIGHT_PORT);
+  sleep_ms(100);
 }
 
 
 void command_turn(int clockwise)
 {
-  command_move_stop();
-  sleep_ms(100);
-  
   int left_angle = motors_get_angle(ROBOT_WHEEL_LEFT_PORT);
   int right_angle = motors_get_angle(ROBOT_WHEEL_RIGHT_PORT);
 

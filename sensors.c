@@ -107,13 +107,17 @@ int sensors_initialize()
   DEVCON DevCon;
   memset(&DevCon, 0, sizeof(DEVCON));
   
-  DevCon.Type[ROBOT_COLOR_SENSOR_PORT] = 29; // TYPE_NXT_COLOR;
+  DevCon.Type[ROBOT_COLOR_SENSOR_PORT] = 29; // TYPE_NXT_COLOR, but ignored on EV3;
   DevCon.Mode[ROBOT_COLOR_SENSOR_PORT] = ROBOT_COLOR_SENSOR_MODE;
   DevCon.Connection[ROBOT_COLOR_SENSOR_PORT] = CONN_INPUT_UART;
   
-  DevCon.Type[ROBOT_DISTANCE_SENSOR_PORT] = 30;
-  DevCon.Mode[ROBOT_DISTANCE_SENSOR_PORT] = ROBOT_DISTANCE_SENSOR_MODE;
-  DevCon.Connection[ROBOT_DISTANCE_SENSOR_PORT] = CONN_INPUT_UART;
+  DevCon.Type[ROBOT_INFRARED_SENSOR_PORT] = 33;
+  DevCon.Mode[ROBOT_INFRARED_SENSOR_PORT] = ROBOT_INFRARED_SENSOR_MODE;
+  DevCon.Connection[ROBOT_INFRARED_SENSOR_PORT] = CONN_INPUT_UART;
+  
+  DevCon.Type[ROBOT_ULTRASONIC_SENSOR_PORT] = 30;
+  DevCon.Mode[ROBOT_ULTRASONIC_SENSOR_PORT] = ROBOT_ULTRASONIC_SENSOR_MODE;
+  DevCon.Connection[ROBOT_ULTRASONIC_SENSOR_PORT] = CONN_INPUT_UART;
   
   ioctl(uart_file, UART_SET_CONN, &DevCon);
   return 0;
@@ -167,7 +171,7 @@ UWORD sensors_get_us_distance_mm(int port)
 
 UWORD sensors_get_ul_distance(int port)
 {
-  // Works for old NXT ultrasone sensor.
+  // Works for old NXT ultrasonic sensor.
   
   // The ports are designated as PORT_NUMBER-1
   return (unsigned char) pIic->Raw[port][pIic->Actual[port]][0]; //*256 + pIic->Raw[port][pIic->Actual[port]][1];
