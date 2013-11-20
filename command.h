@@ -9,6 +9,8 @@ int command_get_right_distance_mm();
 
 void command_move_forward();
 void command_move_stop();
+void command_move_distance(int distance_mm);
+void command_turn_angle(int angle_deg);
 void command_turn_left();
 void command_turn_right();
 

@@ -34,8 +34,8 @@ void screen_initialize()
       width = fixed_info.line_length * 8 / bpp;
       printf("resolution: w=%d, h=%d, bpp=%d\n", width, height, bpp);
       buflen = height * line_length;
-      buffer = mmap(NULL, buflen, PROT_READ|PROT_WRITE,
-                    MAP_SHARED, fd, 0);
+      buffer = (char*) mmap(NULL, buflen, PROT_READ|PROT_WRITE,
+                            MAP_SHARED, fd, 0);
       if (buffer == MAP_FAILED)
       {
         perror("mmap");

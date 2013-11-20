@@ -14,7 +14,7 @@ MINOR := 01
 INCLUDES_SRC = -I$(ANOTHER_PROJECT_HOME) -I$(YET_ANOTHER_PROJECT_HOME)/include
 
 #Libraries
-LIBRARIES := -ldl -L$(ANOTHER_PROJECT_HOME) -lpthread -lm
+LIBRARIES := -ldl -L$(ANOTHER_PROJECT_HOME) -lpthread -lm -Wl,-rpath,/media/card/lib
 
 #Add more App Object files
 OBJFILES :=
@@ -39,7 +39,8 @@ ARCH := arm
 #Compilers
 ifeq ($(ARCH),arm)
 CC := /usr/share/codesourcery/bin/arm-none-linux-gnueabi-g++
-GCC := /usr/share/codesourcery/bin/arm-none-linux-gnueabi-gcc
+GCC := /usr/share/codesourcery/bin/arm-none-linux-gnueabi-g++ 
+# gcc above?
 else
 CC := g++
 GCC := gcc
@@ -58,9 +59,10 @@ endif
 #BuildTool flags
 ifeq ($(BUILD),devel)
 DEBUGFLAGS_Assembler = -g
-DEBUGFLAGS_C++-Compiler = -g -O0 -fno-omit-frame-pointer -pipe -Wall -DDEBUG
+#DEBUGFLAGS_C++-Compiler = -g -O0 -std=c++11 -fno-omit-frame-pointer -pipe -Wall -DDEBUG
+DEBUGFLAGS_C++-Compiler = -g -O4 -std=gnu++11 -fno-omit-frame-pointer -pipe -Wall -DDEBUG
 DEBUGFLAGS_C++-Linker = -g
-DEBUGFLAGS_C-Compiler = -g -O0 -std=gnu99 -fno-omit-frame-pointer -pipe -Wall
+DEBUGFLAGS_C-Compiler = -g -O4 -std=gnu99 -fno-omit-frame-pointer -pipe -Wall
 DEBUGFLAGS_C-Linker = -g
 DEBUGFLAGS_Librarian = -g
 DEBUGFLAGS_Shared-Library-Linker = -g
@@ -68,7 +70,7 @@ TARGET_VER = $(TARGET_PREFIX)$(TARGET_NAME)_$(MAJOR).$(MINOR)_debug$(TARGET_POST
 TARGET = $(TARGET_PREFIX)$(TARGET_NAME)$(TARGET_POSTFIX)
 else
 DEBUGFLAGS_Assembler =
-DEBUGFLAGS_C++-Compiler = -O3 -Wall -Werror
+DEBUGFLAGS_C++-Compiler = -O3 -Wall -Werror  -std=gnu++11
 DEBUGFLAGS_C++-Linker =
 DEBUGFLAGS_C-Compiler = -O2 -fomit-frame-pointer -D__USE_STRING_INLINES -pipe -Wall
 DEBUGFLAGS_C-Linker =
@@ -103,7 +105,7 @@ DEPFILES += $(patsubst %.c,%.d,$(wildcard *.c)) $(patsubst %.c,%.d,$(wildcard sr
 #Compile object files
 #May need to replace $(CC) with $(GCC)
 %.o: %.c
-	$(GCC) $(DEBUGFLAGS_C-Compiler) $(INCLUDES_SRC) $(DEFINES) -c -fmessage-length=0 -o $@ $<
+	$(CC) $(DEBUGFLAGS_C++-Compiler) $(INCLUDES_SRC) $(DEFINES) -c -fmessage-length=0 -o $@ $<
 
 #Build application
 #Create two version of the file so when including the library you do not have to worry about a version

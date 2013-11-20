@@ -32,7 +32,7 @@ int main(int argc, const char* argv[])
   maze_initialize();
   ball_initialize();
   
-  maze_execute(&keep_running);
+  //maze_execute(&keep_running);
   ball_execute(&keep_running);
   
   ball_terminate();

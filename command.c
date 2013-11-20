@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "robot.h"
 #include "motors.h"
 #include "sensors.h"
@@ -53,18 +54,37 @@ void command_move_stop()
   sleep_ms(100);
 }
 
-
-void command_turn(int clockwise)
+void command_move_distance(int distance_mm)
 {
   int left_angle = motors_get_angle(ROBOT_WHEEL_LEFT_PORT);
   int right_angle = motors_get_angle(ROBOT_WHEEL_RIGHT_PORT);
 
-  float wheel_displacement = ROBOT_WHEEL_DISTANCE_X * PI / 4.0;
-  int wheel_rotation = (wheel_displacement / ROBOT_WHEEL_CIRCUMFERENCE) * 360;
+  int wheel_rotation = 360 * ((float)distance_mm/1000.0) / ROBOT_WHEEL_CIRCUMFERENCE;
 
-  printf("command_turn: left=%d, right=%d, rotation=%d, clockwise=%d\n", left_angle, right_angle, wheel_rotation, clockwise);
+  printf("command_move_distance: distance_mm=%d, wheel_rotation=%d\n", distance_mm, wheel_rotation);
   
-  if (clockwise) 
+  left_angle += wheel_rotation;
+  right_angle += wheel_rotation;  
+  
+  motors_start_move_to_angle(ROBOT_WHEEL_LEFT_PORT, ROBOT_SPEED, left_angle);
+  motors_start_move_to_angle(ROBOT_WHEEL_RIGHT_PORT, ROBOT_SPEED, right_angle);
+  motors_wait_move_to_angle(ROBOT_WHEEL_LEFT_PORT, left_angle);
+  motors_wait_move_to_angle(ROBOT_WHEEL_RIGHT_PORT, right_angle);
+  sleep_ms(100);
+}
+
+void command_turn_angle(int angle_deg)
+{
+  int left_angle = motors_get_angle(ROBOT_WHEEL_LEFT_PORT);
+  int right_angle = motors_get_angle(ROBOT_WHEEL_RIGHT_PORT);
+
+  // Both wheels are responsible of half of the rotation
+  float wheel_displacement = ROBOT_WHEEL_DISTANCE_X * angle_deg * PI; 
+  int wheel_rotation = abs(wheel_displacement / ROBOT_WHEEL_CIRCUMFERENCE);
+
+  printf("command_turn: left=%d, right=%d, rotation=%d, angle=%d\n", left_angle, right_angle, wheel_rotation, angle_deg);
+  
+  if (angle_deg<0) 
   {
     left_angle += wheel_rotation;
     right_angle -= wheel_rotation;  
@@ -84,11 +104,11 @@ void command_turn(int clockwise)
 
 void command_turn_left()
 {
-  command_turn(0);
+  command_turn_angle(90);
 }
 
 
 void command_turn_right()
 {
-  command_turn(1);
+  command_turn_angle(-90);
 }

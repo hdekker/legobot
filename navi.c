@@ -20,7 +20,7 @@ void navi_initialize()
   
   // unsigned short map, 4x4 pixel per allocated word
   int words = (ROBOT_MAP_DIMENSION * ROBOT_MAP_DIMENSION) / 16;
-  p_map = malloc(words);
+  p_map = (unsigned short*) malloc(words);
   if (p_map == NULL)
   {
     printf("Failed to allocate map\n");
