@@ -15,12 +15,12 @@ void maze_terminate()
   ; // To be implemented
 }
 
-void maze_execute(int* keep_running)
+void maze_execute(bool* keep_running)
 {
-  int buttons_pressed = 0;
+  printf("maze skipped\n"); return;
   
   command_move_forward();
-    
+  
   do
   {
     sleep_ms(100); // Prevent busy loop
@@ -43,11 +43,7 @@ void maze_execute(int* keep_running)
       }
     }
     
-    // Check how many buttons were pressed. Just one is enough to stop program
-    buttons_pressed = 0;
-    for (int j=0; j<BUTTONS; j++) buttons_pressed += sensors_is_button_pressed(j);
-    
-  } while ((*keep_running) && (buttons_pressed == 0));
+  } while (*keep_running);
   
   printf("A button was pressed, stopping...\n");
   command_move_stop();

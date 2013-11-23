@@ -6,18 +6,18 @@
 
 #define IIC_PORT 0x2;
 
-//typedef enum 
-//{
- // SENSORS_NXT_COL_REF = 0,
- // SENSORS_NXT_COL_AMB = 1,
- // SENSORS_NXT_COL_COL = 2,
-  //SENSORS_NXT_COL_GRN = 3,
-  //SENSORS_NXT_COL_BLU = 4,
-  //SENSORS_NXT_COL_RAW = 5,
-//} SENSORS_NXT_COL;
+typedef enum 
+{
+ BUTTON_CODE_UP = 0,
+ BUTTON_CODE_OK = 1,
+ BUTTON_CODE_DOWN = 2,
+ BUTTON_CODE_RIGHT = 3,
+ BUTTON_CODE_LEFT = 4,
+ BUTTON_CODE_ESC = 5,
+} BUTTON_CODE;
 
-int sensors_initialize();
-int sensors_terminate();
+int sensors_initialize(bool* keep_running);
+int sensors_terminate(bool* keep_running);
 
 //int sensors_set_color_mode(int port, SENSORS_NXT_COL mode);
 
@@ -26,6 +26,9 @@ UWORD sensors_get_ir_distance(int port);
 UWORD sensors_get_ul_distance(int port); // NXT ultrasonic sensor
 UWORD sensors_get_us_distance_mm(int port); // EV3 ultrasonic sensor
 UWORD sensors_get_color(int port);
-DATA8 sensors_is_button_pressed(int button);
+
+
+int sensors_is_button_pressed(int button);
+void sensors_clear_buttons_pressed();
 
 #endif /* SENSORS_H_ */

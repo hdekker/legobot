@@ -3,6 +3,6 @@
 
 void maze_initialize();
 void maze_terminate();
-void maze_execute(int* keep_running);
+void maze_execute(bool* keep_running);
 
 #endif /* MAZE_H_ */

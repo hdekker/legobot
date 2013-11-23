@@ -2,11 +2,13 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
 #include "lms2012.h"
 #include "sensors.h"
 #include "robot.h"
+#include "common.h"
 
 static int ad_file;
 static ANALOG *pAnalog;
@@ -21,7 +23,56 @@ static int iic_file;
 static IIC *pIic;
 static IICDAT IicDat;
   
-int sensors_initialize()
+static pthread_t thread;
+static int button_pressed_count[BUTTONS];
+
+void* check_button_thread_func(void* ptr)
+{
+  bool* keep_running;
+  keep_running = (bool*) ptr;
+  bool button_states[BUTTONS];
+  for (int i=0; i<BUTTONS; i++)
+  {
+    button_states[i] = false;
+    button_pressed_count[i] = 0;
+  }
+    
+  printf("Check button thread running\n");
+  while (*keep_running)
+  {
+    sleep_ms(10);
+    for (int i=0; i<BUTTONS; i++)
+    {
+      int pressed = pUI->Pressed[i];
+      if (pressed)
+      {
+        if (!button_states[i])
+        {
+          button_states[i] = true;
+          button_pressed_count[i] += 1;
+          printf("pressed button %d\n", i);
+        }
+      }
+      else // pressed == false
+      {
+        if (button_states[i])
+        {
+          button_states[i] = false;
+          printf("pressed released %d\n", i);
+        }
+      }
+    }
+    if (button_pressed_count[BUTTON_CODE_ESC])
+    {
+      *keep_running = 0;
+    }
+  }
+  printf("Check button thread stopping\n");
+  return NULL;
+}
+
+
+int sensors_initialize(bool* keep_running)
 {
   //Open the device file
   if((ad_file = open(ANALOG_DEVICE_NAME, O_RDWR | O_SYNC)) == -1)
@@ -120,11 +171,19 @@ int sensors_initialize()
   DevCon.Connection[ROBOT_ULTRASONIC_SENSOR_PORT] = CONN_INPUT_UART;
   
   ioctl(uart_file, UART_SET_CONN, &DevCon);
+  
+  pthread_create(&thread, NULL, check_button_thread_func, (void*) keep_running);
+  
   return 0;
+  
 }
 
-int sensors_terminate()
+int sensors_terminate(bool* keep_running)
 {
+  // Make sure thread stopped before closing io mapped memory
+  *keep_running = 0;
+  pthread_join(thread, NULL);
+  
   // Close the device files
   printf("Closing analog device\n");
   if (pAnalog && pAnalog != MAP_FAILED)
@@ -145,6 +204,7 @@ int sensors_terminate()
   if (pIic && pIic != MAP_FAILED)
     munmap(pIic, sizeof(IIC));
   close(iic_file);
+  
   return 0;
 }
 
@@ -177,9 +237,14 @@ UWORD sensors_get_ul_distance(int port)
   return (unsigned char) pIic->Raw[port][pIic->Actual[port]][0]; //*256 + pIic->Raw[port][pIic->Actual[port]][1];
 }
 
-DATA8 sensors_is_button_pressed(int button)
+int sensors_is_button_pressed(int button)
 {
-  return pUI->Pressed[button];
+  return button_pressed_count[button] > 0;
+}
+
+void sensors_clear_buttons_pressed()
+{
+  for (int i=0; i<BUTTONS; i++) button_pressed_count[i] = 0;
 }
 
 UWORD sensors_get_color(int port)

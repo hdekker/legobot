@@ -41,11 +41,9 @@ uint32_t fastmath_sqrt(uint32_t x)
   uint32_t g = 0x8000;  
 
   for(;;) {  
-    if(g*g > x)  
-      g ^= c;  
+    if(g*g > x) g ^= c;  
     c >>= 1;  
-    if(c == 0)  
-      return g;  
+    if(c == 0) return g;  
     g |= c;  
   }  
 }  

@@ -3,6 +3,6 @@
 
 void ball_initialize();
 void ball_terminate();
-void ball_execute(int* keep_running);
+void ball_execute(bool* keep_running);
 
 #endif /* BALL_H_ */

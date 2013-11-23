@@ -687,15 +687,7 @@ bool equal_pos(position_t p0, position_t p1)
   return (abs(pos.x) < 50) && (abs(pos.y) < 50) && (abs(pos.a) < 2000);
 }
 
-bool check_keep_running(int* keep_running)
-{
-  int buttons_pressed = 0;
-  for (int j=0; j<BUTTONS; j++) buttons_pressed += sensors_is_button_pressed(j);
-  *keep_running = (buttons_pressed) ? 0 : *keep_running;
-  return (*keep_running != 0);
-}
-
-void move_to_position(position_t end_pos, int* keep_running, CParticles& particles, Measurements& measurements)
+void move_to_position(position_t end_pos, bool* keep_running, CParticles& particles, Measurements& measurements)
 {
   // static position_t cur_pos = { 300, 500, DEG2UINT16(45) };
   position_t cur_pos;
@@ -714,29 +706,39 @@ void move_to_position(position_t end_pos, int* keep_running, CParticles& particl
     
     // Turn
     command_turn_angle(UINT162DEG(diff_pos.a));
-    check_keep_running(keep_running);
-    particles.move(diff_pos.a, 0);
-    measurements[0] = { DEG2UINT16(-90), command_get_right_distance_mm() };
-    measurements[1] = { DEG2UINT16(  0), command_get_forward_distance_mm() };
-    particles.sense(measurements, cur_pos, dev_pos);
-    
+    if (*keep_running)
+    {
+      particles.move(diff_pos.a, 0);
+      measurements[0] = { DEG2UINT16(-90), command_get_right_distance_mm() };
+      measurements[1] = { DEG2UINT16(  0), command_get_forward_distance_mm() };
+      particles.sense(measurements, cur_pos, dev_pos);
+    }
     // Move forward
     command_move_distance(20);
-    check_keep_running(keep_running);
-    particles.move(0, 20);
-    measurements[0] = { DEG2UINT16(-90), command_get_right_distance_mm() };
-    measurements[1] = { DEG2UINT16(  0), command_get_forward_distance_mm() };
-    particles.sense(measurements, cur_pos, dev_pos);
-
-    // Check if we can stop    
-    check_keep_running(keep_running);
+    if (*keep_running)
+    {
+      particles.move(0, 20);
+      measurements[0] = { DEG2UINT16(-90), command_get_right_distance_mm() };
+      measurements[1] = { DEG2UINT16(  0), command_get_forward_distance_mm() };
+      particles.sense(measurements, cur_pos, dev_pos);
+    }
   }
 }
 
 
 
-void ball_execute(int* keep_running)
+void ball_execute(bool* keep_running)
 {
+  printf("ball execute\n");
+  int j = 1;
+  while (j<100)
+  {
+    j = j + 1;
+    printf("j");
+  }
+  
+  return;
+  
   CParticles particles;
   Measurements meas;
   

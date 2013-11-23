@@ -1,6 +1,8 @@
 #include <signal.h>
 #include <unistd.h>  // sleep
 #include <stdio.h>   // printf
+#include <stdlib.h>  // malloc
+#include <pthread.h>
 #include "lms2012.h"
 
 #include "screen.h"
@@ -13,33 +15,89 @@
 #include "maze.h"
 #include "ball.h"
 
-static int keep_running = 1;
+static bool keep_running = true;
 
 void intHandler(int dummy)
 {
-  keep_running = 0;
+  keep_running = false;
 }
+
+void* busyloop(void* ptr)
+{
+  int i = 0;
+  while (1) i++;
+  return NULL;
+}
+
+typedef void(*game_func)(bool*);
+
+typedef struct function_args
+{
+  game_func function;
+  bool * ptr_keep_running;
+} function_args;
+
+  
+void* run(void* args)
+{
+  function_args* functionargs = (function_args*) args;
+  pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+  pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
+  functionargs->function(functionargs->ptr_keep_running);
+  free(functionargs);
+  return NULL;
+}
+
+pthread_t start(game_func gamefunc, bool* ptr_keep_running)
+{
+  pthread_t thread = 0UL;
+  function_args* args = (function_args*) malloc(sizeof(function_args));
+  args->function = gamefunc;
+  args->ptr_keep_running = ptr_keep_running;
+  pthread_create(&thread, NULL, run, (void*)args);
+  return thread;
+}
+
+void stop(pthread_t thread)
+{
+  pthread_cancel(thread);
+  pthread_join(thread, NULL);
+}
+
 
 int main(int argc, const char* argv[])
 {
+  pthread_t thread = 0UL;
+  
   signal(SIGINT, intHandler);
   
   screen_initialize();
   screen_clear();
-  sensors_initialize();
+  sensors_initialize(&keep_running);
   motors_initialize();
   command_initialize();
   maze_initialize();
   ball_initialize();
+
+  if (keep_running)
+  {
+    thread = start(maze_execute, &keep_running);
+    while (keep_running and (pthread_kill(thread, 0)==0)) sleep(1);
+    stop(thread);
+  }
   
-  //maze_execute(&keep_running);
-  ball_execute(&keep_running);
+  if (keep_running)
+  {
+    thread = start(ball_execute, &keep_running);
+    while (keep_running and (pthread_kill(thread, 0)==0)) sleep(1);
+    stop(thread);
+  }
   
   ball_terminate();
   maze_terminate();
   command_terminate();
   motors_terminate();
-  sensors_terminate();
+  sensors_terminate(&keep_running);
   screen_terminate();
   
   return 0;

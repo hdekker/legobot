@@ -4,6 +4,7 @@
 #include "motors.h"
 #include "sensors.h"
 #include "common.h"
+#include "command.h"
 
 void command_initialize()
 {
