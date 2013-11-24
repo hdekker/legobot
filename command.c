@@ -67,10 +67,10 @@ void command_move_distance(int distance_mm)
   left_angle += wheel_rotation;
   right_angle += wheel_rotation;  
   
-  motors_start_move_to_angle(ROBOT_WHEEL_LEFT_PORT, ROBOT_SPEED, left_angle);
-  motors_start_move_to_angle(ROBOT_WHEEL_RIGHT_PORT, ROBOT_SPEED, right_angle);
-  motors_wait_move_to_angle(ROBOT_WHEEL_LEFT_PORT, left_angle);
-  motors_wait_move_to_angle(ROBOT_WHEEL_RIGHT_PORT, right_angle);
+  motors_start_move_to_angle(ROBOT_WHEEL_LEFT_PORT, ROBOT_SPEED, left_angle, 0);
+  motors_start_move_to_angle(ROBOT_WHEEL_RIGHT_PORT, ROBOT_SPEED, right_angle, 0);
+  motors_wait_move_to_angle(ROBOT_WHEEL_LEFT_PORT);
+  motors_wait_move_to_angle(ROBOT_WHEEL_RIGHT_PORT);
   sleep_ms(100);
 }
 
@@ -96,10 +96,10 @@ void command_turn_angle(int angle_deg)
     right_angle += wheel_rotation;  
   }
   
-  motors_start_move_to_angle(ROBOT_WHEEL_LEFT_PORT, ROBOT_SPEED, left_angle);
-  motors_start_move_to_angle(ROBOT_WHEEL_RIGHT_PORT, ROBOT_SPEED, right_angle);
-  motors_wait_move_to_angle(ROBOT_WHEEL_LEFT_PORT, left_angle);
-  motors_wait_move_to_angle(ROBOT_WHEEL_RIGHT_PORT, right_angle);
+  motors_start_move_to_angle(ROBOT_WHEEL_LEFT_PORT, ROBOT_SPEED, left_angle, 0);
+  motors_start_move_to_angle(ROBOT_WHEEL_RIGHT_PORT, ROBOT_SPEED, right_angle, 0);
+  motors_wait_move_to_angle(ROBOT_WHEEL_LEFT_PORT);
+  motors_wait_move_to_angle(ROBOT_WHEEL_RIGHT_PORT);
   sleep_ms(100);
 }
 

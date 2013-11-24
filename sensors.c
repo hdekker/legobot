@@ -220,13 +220,15 @@ UWORD sensors_get_ir_distance(int port)
   return pUart->Raw[port][pUart->Actual[port]][0];
 }
 
-UWORD sensors_get_us_distance_mm(int port)
+int sensors_get_us_distance_mm(int port)
 {
   // Works for new EV3 ultrasone sensor.
   
   // The ports are designated as PORT_NUMBER-1
   // Value in tenth of millimeter
-  return (unsigned char) pUart->Raw[port][pUart->Actual[port]][1]*256 + pUart->Raw[port][pUart->Actual[port]][0];
+  unsigned int lo_byte = (unsigned char)(pUart->Raw[port][pUart->Actual[port]][0]);
+  unsigned int hi_byte = ((unsigned int)pUart->Raw[port][pUart->Actual[port]][1])<<8;
+  return (int)(hi_byte + lo_byte);
 }
 
 UWORD sensors_get_ul_distance(int port)
@@ -247,8 +249,8 @@ void sensors_clear_buttons_pressed()
   for (int i=0; i<BUTTONS; i++) button_pressed_count[i] = 0;
 }
 
-UWORD sensors_get_color(int port)
+COLOR_CODE sensors_get_color(int port)
 {
-  return pUart->Raw[port][pUart->Actual[port]][0];
+  return (COLOR_CODE) pUart->Raw[port][pUart->Actual[port]][0];
 }
 

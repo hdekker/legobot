@@ -47,6 +47,7 @@ int motors_initialize()
 int motors_terminate()
 {
   motors_stop_all();
+  sleep_ms(100);
   
   printf("Closing encoder device\n");
   if (pMotorData && pMotorData != MAP_FAILED)
@@ -57,6 +58,11 @@ int motors_terminate()
   close(pwm_file);
   
   return 0;
+}
+
+void motors_reset_angle(int port)
+{
+  angles[port] = pMotorData[port].TachoSensor;
 }
 
 void motors_reset_all()
@@ -74,7 +80,7 @@ void motors_reset_all()
   int port;
   for (port=0; port<INPUTS; port++)
   {
-    angles[port] = motors_get_angle(port);
+    motors_reset_angle(port);
   }
 }
 
@@ -86,6 +92,7 @@ void motors_stop(int port)
   motor_command[1] = port;
   motor_command[2] = 1;
   write(pwm_file, motor_command, 3);
+  fsync(pwm_file);
 }
 
 void motors_stop_all()
@@ -103,6 +110,7 @@ void motors_stop_all()
   motor_command[1] = 0x15;
   motor_command[2] = 1;
   write(pwm_file, motor_command, 3);
+  fsync(pwm_file);
   
   // Reset port
   //motor_command[0] = opOUTPUT_RESET;
@@ -124,6 +132,7 @@ void motors_set_speed(int port, int speed)
   // Start the motor
   motor_command[0] = opOUTPUT_START;
   write(pwm_file, motor_command, 2);
+  fsync(pwm_file);
 }
 
 SBYTE motors_get_motor_speed(int port)
@@ -133,14 +142,16 @@ SBYTE motors_get_motor_speed(int port)
 
 SLONG motors_get_angle(int port)
 {
-  return pMotorData[port].TachoSensor - angles[port];
+  SLONG angle = pMotorData[port].TachoSensor - angles[port];
+  printf("motors_get_angle: port=%d, angle=%d\n", port, angle);
+  return angle;
 }
 
 //opOUTPUT_STEP_SPEED   LAYER   NOS      SPEED   STEP1   STEP2   STEP3   BRAKE
 void motors_step_speed(int port, int speed, int step1, int step2, int step3)
 {
+  printf("motors_step_speed: port=%d, speed=%d, step1=%d, step2=%d, step3=%d\n", port, speed, step1, step2, step3);
   port = 1 << port;
-  //printf("motors_step_speed\n");
  
    STEPSPEED step_speed;
    step_speed.Cmd = opOUTPUT_STEP_SPEED;
@@ -161,10 +172,11 @@ void motors_step_speed(int port, int speed, int step1, int step2, int step3)
   motor_command[0] = opOUTPUT_START;
   motor_command[1] = port;
   write(pwm_file, motor_command, 2);
+  fsync(pwm_file);
 }
 
 
-void motors_start_move_to_angle(int port, int speed, int angle_deg)
+void motors_start_move_to_angle(int port, int speed, int angle_deg, int maxturns)
 {
   // angle (-90 = left, 0 = forward, +90 = right)
   SLONG motor_angle = motors_get_angle(port);
@@ -172,40 +184,51 @@ void motors_start_move_to_angle(int port, int speed, int angle_deg)
   if (motor_angle < angle_deg)
   {
     int swing = angle_deg - motor_angle;
+    if (maxturns)
+    {
+      //printf("swing_pos_0 = %d\n", swing);
+      swing %= ((maxturns * 360) + 1);
+      //printf("swing_pos_1 = %d\n", swing);
+    }
     int swing_edge = swing / 5;
     motors_step_speed(port, speed, swing_edge, swing - (swing_edge * 2), swing_edge);
   }
   else if (motor_angle > angle_deg)
   {
     int swing = motor_angle - angle_deg;
+    if (maxturns)
+    {
+      //printf("swing_neg_0 = %d\n", swing);
+      swing %= ((maxturns * 360) + 1);
+      //printf("swing_neg_1 = %d\n", swing);
+    }
     int swing_edge = swing / 5;
     motors_step_speed(port, -speed, swing_edge, swing - (swing_edge * 2), swing_edge);
   }
 }
 
 
-void motors_wait_move_to_angle(int port, int angle_deg)
+void motors_wait_move_to_angle(int port)
 {
   // Wait until motors movement is finished. This is detected when motor speed is 0.
   // To prevent errors, the last 4 motor speed measurements have to be 0.
   
-  SLONG motor_angle;
   SBYTE motor_speeds[4] = { -1, -1, -1, -1 };
   int i = 0;
   do
   {
-    sleep_ms(20);
+    sleep_ms(100);
     motor_speeds[i%4] = motors_get_motor_speed(port);
-    motor_angle = motors_get_angle(port);
-    if ((i%10) == 0) printf("motors_wait_move_to_angle: port=%d, angle=%d, cur_angle=%d, speed=%d\n", port, angle_deg, motor_angle, motor_speeds[i%4]);
+    //SLONG motor_angle = motors_get_angle(port);
+    //if ((i%10) > 0) printf("motors_wait_move_to_angle: port=%d, cur_angle=%d, speed=%d\n", port, motor_angle, motor_speeds[i%4]);
     // Speed of last 4 measurements
     i++;
   } while ((abs(motor_speeds[0]) + abs(motor_speeds[1]) + abs(motor_speeds[2]) + abs(motor_speeds[3])) > 0);
 }
 
 
-void motors_move_to_angle(int port, int speed, int angle_deg)
+void motors_move_to_angle(int port, int speed, int angle_deg, int maxturns)
 {
-  motors_start_move_to_angle(port, speed, angle_deg);
-  motors_wait_move_to_angle(port, angle_deg);
+  motors_start_move_to_angle(port, speed, angle_deg, maxturns);
+  motors_wait_move_to_angle(port);
 }

@@ -17,10 +17,10 @@
 #define ROBOT_ULTRASONIC_SENSOR_MODE 0
 
 // Actuators
-#define ROBOT_WHEEL_LEFT_PORT   3 // D
-#define ROBOT_WHEEL_RIGHT_PORT  0 // A
-//#define ROBOT_BALL_THROW_MOTOR_PORT 2 // C
-//#define ROBOT_RADAR_MOTOR_PORT  1 // B
+#define ROBOT_WHEEL_RIGHT_PORT 0 // A
+#define ROBOT_BALL_CATCH_PORT  1 // B
+#define ROBOT_BALL_THROW_PORT  2 // C
+#define ROBOT_WHEEL_LEFT_PORT  3 // D
 
 #define ROBOT_RADAR_SWING  200
 #define ROBOT_RADAR_ROTATION 90      // mounted radar angle 90 degrees

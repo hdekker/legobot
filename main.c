@@ -34,7 +34,7 @@ typedef void(*game_func)(bool*);
 typedef struct function_args
 {
   game_func function;
-  bool * ptr_keep_running;
+  bool * keep_running;
 } function_args;
 
   
@@ -43,32 +43,31 @@ void* run(void* args)
   function_args* functionargs = (function_args*) args;
   pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
   pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
-  functionargs->function(functionargs->ptr_keep_running);
-  free(functionargs);
+  functionargs->function(functionargs->keep_running);
   return NULL;
 }
 
-pthread_t start(game_func gamefunc, bool* ptr_keep_running)
+
+void execute(game_func gamefunc)
 {
-  pthread_t thread = 0UL;
+  pthread_t thread;
   function_args* args = (function_args*) malloc(sizeof(function_args));
   args->function = gamefunc;
-  args->ptr_keep_running = ptr_keep_running;
-  pthread_create(&thread, NULL, run, (void*)args);
-  return thread;
-}
-
-void stop(pthread_t thread)
-{
-  pthread_cancel(thread);
-  pthread_join(thread, NULL);
+  args->keep_running = &keep_running;
+  if (keep_running)
+  {
+    pthread_create(&thread, NULL, run, (void*)args);
+    // Wait while thread is running, or has to stop
+    while (keep_running and (pthread_kill(thread, 0)==0)) sleep(1);
+    pthread_cancel(thread);
+    pthread_join(thread, NULL);
+  }
+  free(args);
 }
 
 
 int main(int argc, const char* argv[])
 {
-  pthread_t thread = 0UL;
-  
   signal(SIGINT, intHandler);
   
   screen_initialize();
@@ -79,19 +78,11 @@ int main(int argc, const char* argv[])
   maze_initialize();
   ball_initialize();
 
-  if (keep_running)
-  {
-    thread = start(maze_execute, &keep_running);
-    while (keep_running and (pthread_kill(thread, 0)==0)) sleep(1);
-    stop(thread);
-  }
+  // Run through maze
+  execute(maze_execute);
   
-  if (keep_running)
-  {
-    thread = start(ball_execute, &keep_running);
-    while (keep_running and (pthread_kill(thread, 0)==0)) sleep(1);
-    stop(thread);
-  }
+  // Throw balls
+  execute(ball_execute);
   
   ball_terminate();
   maze_terminate();
