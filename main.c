@@ -75,7 +75,6 @@ int main(int argc, const char* argv[])
   sensors_initialize(&keep_running);
   motors_initialize();
   command_initialize();
-  maze_initialize();
   ball_initialize();
 
   // Run through maze
@@ -85,7 +84,6 @@ int main(int argc, const char* argv[])
   execute(ball_execute);
   
   ball_terminate();
-  maze_terminate();
   command_terminate();
   motors_terminate();
   sensors_terminate(&keep_running);

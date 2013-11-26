@@ -20,8 +20,6 @@ void command_terminate()
 
 int command_get_forward_distance_mm()
 {
-  //motors_move_to_angle(ROBOT_RADAR_MOTOR_PORT, ROBOT_RADAR_SPEED, 0);
-  sleep_ms(100);
   int distance = sensors_get_ir_distance(ROBOT_INFRARED_SENSOR_PORT);
   distance *= 10; // From pct to mm 
   printf("command_get_forward_distance_mm: distance=%d\n", distance);
@@ -31,8 +29,6 @@ int command_get_forward_distance_mm()
 
 int command_get_right_distance_mm()
 {
-  //motors_move_to_angle(ROBOT_RADAR_MOTOR_PORT, ROBOT_RADAR_SPEED, 90);
-  sleep_ms(100);
   int distance = sensors_get_us_distance_mm(ROBOT_ULTRASONIC_SENSOR_PORT);
   printf("command_get_right_distance_mm: distance=%d\n", distance);
   return distance;
