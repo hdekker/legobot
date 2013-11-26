@@ -27,7 +27,7 @@
 #define ROBOT_RADAR_DIRECTION (-1)   // clockwise is negative angle
 #define ROBOT_RADAR_SPEED  5
 
-#define ROBOT_WHEEL_DISTANCE_X   0.20   // SI meter
+#define ROBOT_WHEEL_DISTANCE_X   0.24   // SI meter
 #define ROBOT_WHEEL_DIAMETER     0.036  // SI meter
 #define ROBOT_WHEEL_CIRCUMFERENCE  (ROBOT_WHEEL_DIAMETER * PI)
 
